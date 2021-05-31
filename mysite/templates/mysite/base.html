@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CSV File Editor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <!-- Popper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+    <!-- Font Awesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+        body {
+            padding-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="navbar">
+        {% include 'mysite/navbar.html' %}
+    </div><br>
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <script>
+
+        $(document).ready(function(){
+
+            $("#select_form").submit(function(e) {
+                e.preventDefault();
+                var form = $(this);
+                var update_url = form.attr("action");
+
+                var $inputs = $('#select_form :input');
+
+                var values = {};
+                $inputs.each(function() {
+                    values[this.name] = $(this).val();
+                });
+
+                $.ajax({
+                    method:"POST",
+                    url: update_url,
+                    data: values,
+                    success: function(data) {
+                        populateData(data);
+                    },
+                    error: function(data){
+                        console.log("error");
+                        console.log(data);
+                    }
+                });
+            });
+
+            $("#range_form").submit(function(e){
+                e.preventDefault();
+                var form = $(this);
+                var update_url = form.attr("action");
+
+                var $inputs = $('#range_form :input');
+
+                var values = {};
+                $inputs.each(function() {
+                    values[this.name] = $(this).val();
+                });
+
+                $.ajax({
+                    method:"POST",
+                    url: update_url,
+                    data: values,
+                    success: function(data) {
+                        console.log(data);
+                        populateData(data);
+                    },
+                    error: function(data){
+                        console.log("error");
+                        console.log(data);
+                    }
+                });
+            });
+
+            function populateData(data) {
+                var table = $("table");
+                $.each(data, function(key, values) {
+                    if (key == 'error') {
+                        var error = $("#error");
+                        error.html(values);
+                    }
+                    else if (key == 'header') {
+                        tHeadHtml = '<thead><tr>';
+                        $.each(values, function(i, value) {
+                            tHeadHtml += '<td>' + value + '</td>';
+                        });
+                        tHeadHtml += '</tr></thead>'
+                        table.html(tHeadHtml);
+                    } else {
+                        tBodyHtml = '<tbody>'
+                        $.each(values, function(i, row) {
+                            tBodyHtml += '<tr>';
+                            $.each(row, function(i, value) {
+                                tBodyHtml += '<td>' + value + '</td>';
+                            });
+                            tBodyHtml += '</tr>';
+                        });
+                        tBodyHtml += '</tbody>'
+                        table.append(tBodyHtml);
+                    }
+                });
+            }
+
+        });
+    </script>
+</body>
+</html>
